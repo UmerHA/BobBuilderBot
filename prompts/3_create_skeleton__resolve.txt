@@ -20,3 +20,5 @@ Because you are a good senior software engineer, you reflected on your intial th
 [End of critique]
 
 With your critique in mind, answer the question again: Which files do you need to create? For each file, provide a high-level description of the content. Then, for each file, provide a list of function signatures.
+
+{format_instructions}
