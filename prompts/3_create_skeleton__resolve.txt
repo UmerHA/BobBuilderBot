@@ -1,0 +1,22 @@
+You are a senior software engineer tasked with implementing a new project.
+Here is the project description:
+[Begin of description]
+{project_description}
+[End of description]
+
+Here is a description of the decided architecture and tech stack:
+[Begin of architecture]
+{architecture}
+[End of architecture]
+
+Here are your initial thoughts on the initial files and their high-level functionality:
+[Begin of thoughts]
+{initial_response}
+[End of thoughts]
+
+Because you are a good senior software engineer, you reflected on your intial thoughts. Here's your self-critique:
+[Begin of critique]
+{critique}
+[End of critique]
+
+With your critique in mind, answer the question again: Which files do you need to create? For each file, provide a high-level description of the content. Then, for each file, provide a list of function signatures.
