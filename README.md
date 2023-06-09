@@ -12,6 +12,9 @@ Reasonable asks from Bob the BuilderBot could be:
 The goal is **not** to build highly complex, performant or security-critical systems.
 Bob will never build software to control nuclear power plants or hospitals.
 
+## Examples
+todo
+
 ## Approach
 
 I think an agile development process works best, as:
@@ -38,6 +41,7 @@ Each step is an LLM-call wrapped in [Reflexion](https://arxiv.org/abs/2303.11366
 This is an incomplete list of what's to do:
 
 1. Finish v0
+- Handle when agents asks clarifying questions 
 - Finish implementing all 8 phases (currently 1-3 work)
 - Decide how to deploy (Streamlit? replit? ...?)
 

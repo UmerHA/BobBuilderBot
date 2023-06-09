@@ -15,23 +15,4 @@ Here's your self-critique of your initial response:
 
 With your critique in mind, generate an improved project description.
  
-You're answer should be formatted like this:
-[Begin of format description]
-The user's goal is ...
-
-Therefore, the user needs:
-- functionality 1
-- functionality 2
-- ...
-
-In this, I have made the following assumptions:
-- assumption 1
-- assumption 2
-- ...
-
-(If you have no questions to the user:) I have no question to the user.
-(If you have clarifying questions to the user:) I have these questions to the user:
-- question 1
-- question 2
-- ...
-[End of format description]
+{format_instructions}

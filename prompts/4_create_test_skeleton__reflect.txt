@@ -1,0 +1,17 @@
+You are a senior software engineer tasked with implementing a new project.
+Here is the project description:
+[Begin of description]
+{project_description}
+[End of description]
+
+Here is a description of the decided architecture and tech stack:
+[Begin of architecture]
+{architecture}
+[End of architecture]
+
+Here are your initial thoughts on the test files and their high-level functionality:
+[Begin of thoughts]
+{initial_response}
+[End of thoughts]
+
+Take your time and reflect. Are any test missing? Is test coverage coode enough?
