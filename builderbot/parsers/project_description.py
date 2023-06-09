@@ -4,17 +4,20 @@ from pydantic import BaseModel, Field
 
 class UserQuestion(BaseModel):
     content: str = Field(description="a claryfing question to the user")
+
 class Assumption(BaseModel):
     content: str = Field(description="an educated, explicit assumptions you made")
+
 class Requirement(BaseModel):
     content: str = Field(description="a project requirement")
+
 class ProjectDescription(BaseModel):
     user_goal: str = Field(description="the user's goal")
     requirements: List[Requirement] = Field(description="list of requirements that together define the project")
     assumptions: List[Assumption] = Field(description="list of educated, explicit assumptions you made")
     questions: Optional[List[UserQuestion]] = Field(description="list of clarifying questions to the user")
 
-    def to_str(self):
+    def to_str(self) -> str:
         '''Represent project description as string, so it is easier to process by LLM'''
 
         result = "The user's goal is " + self.user_goal + "\n\n"

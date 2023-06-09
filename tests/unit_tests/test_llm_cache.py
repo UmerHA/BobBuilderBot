@@ -2,7 +2,7 @@ from typing import List, Optional
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain.chat_models.base import SimpleChatModel
 from langchain.schema import BaseMessage
-from builderbot.llm_inference import LLMCache
+from builderbot.inference import LLMCache
 
 class FakeLLM(SimpleChatModel):
     def _call(

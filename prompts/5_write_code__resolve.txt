@@ -1,0 +1,16 @@
+You are a senior software engineer. Your are working for a client whose goal is: {user_goal}.
+
+Here's the relevant code:
+{code_base}
+
+I want you to implement this feature: {feature}
+
+Here are your initial thoughts on how to implement the feature:
+{initial_response}
+
+Here's you self-reflection about:
+{critique}
+
+With your critique in mind, give an improved implementation. 
+
+{format_instructions}

@@ -57,8 +57,8 @@ class LLMInferer():
         DevPhase.ARCHITECTURE: "2_architecture",
         DevPhase.STRUCTURE_CODE: "3_skeleton_code",
         DevPhase.STRUCTURE_TESTS: "4_skeleton_test",
-        DevPhase.FLESH_OUT_CODE: "5_flesh_out_code",
-        DevPhase.FLESH_OUT_TESTS: "6_flesh_out_test"
+        DevPhase.WRITE_CODE: "5_write_code",
+        DevPhase.WRITE_TESTS: "6_write_test"
     }
     step_for_logging = {
         InferenceStep.IDEATE: "__a_ideation",
@@ -76,7 +76,7 @@ class LLMInferer():
         return self.cache.get_llm_result(self.llm, prompt)
 
     def get_thoughtful_reponse(self, phase: DevPhase,
-        verbose=True, save=True, save_intermediate=True, format_instructions=None,
+        verbose=True, save=True, format_instructions=None,
         **prompt_vars) -> str:
 
         if verbose: print(f">>> {phase}")
@@ -85,19 +85,19 @@ class LLMInferer():
         prompt = get_prompt(phase, InferenceStep.IDEATE, **prompt_vars)
         initial_response = self.llm_result(prompt)
         if verbose: print(f"> Initial response:\n{initial_response}\n")    
-        if save_intermediate: self.save_output(initial_response, phase, InferenceStep.IDEATE)
+        if save: self.save_output(initial_response, phase, InferenceStep.IDEATE)
             
         # Step 2: Self-critique
         prompt = get_prompt(phase, InferenceStep.CRITIQUE, initial_response=initial_response, **prompt_vars)
         critique = self.llm_result(prompt)
         if verbose: print(f"> Self-critique:\n{critique}\n")
-        if save_intermediate: self.save_output(critique, phase, InferenceStep.CRITIQUE)
+        if save: self.save_output(critique, phase, InferenceStep.CRITIQUE)
 
         # Step 3: Thoughtful response
         if format_instructions: prompt_vars["format_instructions"] = format_instructions  # only use format instructions in last step
         prompt = get_prompt(phase, InferenceStep.RESOLVE, initial_response=initial_response, critique=critique, **prompt_vars)
         thoughtful_response = self.llm_result(prompt)
         if verbose: print(f"> Thoughtful response:\n{thoughtful_response}\n")
-        if save_intermediate: self.save_output(thoughtful_response, phase, InferenceStep.RESOLVE)
+        if save: self.save_output(thoughtful_response, phase, InferenceStep.RESOLVE)
         
         return thoughtful_response

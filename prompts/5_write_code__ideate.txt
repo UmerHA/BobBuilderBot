@@ -1,0 +1,8 @@
+You are a senior software engineer. Your are working for a client whose goal is: {user_goal}.
+
+Here's the relevant code:
+{code_base}
+
+I want you to implement this feature: {feature}
+
+Don't give me full code files, only give me the new and changed parts.

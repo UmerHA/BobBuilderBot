@@ -28,8 +28,8 @@ With this in mind, the phases of Software Creation for Bob are:
 2. **Architect:** Decide on high-level architecture and tech stack
 3. **Structure Code:** Decide which files we'll need, what they'll do and what the main functions are
 4. **Structure Tests:** Decide how we'll test and what tests we'll have
-5. **Flesh out code:** Iteratively, write the code
-6. **Flesh out tests:** Iteratively, write the tests and make sure they pass
+5. **Write code:** Iteratively, write the code
+6. **Write out tests:** Iteratively, write the tests and make sure they pass
 7. **Deploy:** Deploy so user can see and interact with the project
 8. **Improve:** Ask user for feedback, rinse and repeat
 

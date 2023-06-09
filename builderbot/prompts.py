@@ -8,8 +8,8 @@ phase2file = {
     DevPhase.ARCHITECTURE: "2_choose_architecture",
     DevPhase.STRUCTURE_CODE: "3_create_code_skeleton",
     DevPhase.STRUCTURE_TESTS: "4_create_test_skeleton",
-    DevPhase.FLESH_OUT_CODE: "5_flesh_out_code",
-    DevPhase.FLESH_OUT_TESTS: "6_flesh_out_test",
+    DevPhase.WRITE_CODE: "5_write_code",
+    DevPhase.WRITE_TESTS: "6_write_test",
     DevPhase.DEPLOY: "7_deploy",
     DevPhase.IMPROVE: "8_improve"
 }
