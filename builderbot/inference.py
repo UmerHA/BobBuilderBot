@@ -18,7 +18,7 @@ class LLMCache:
             self.cache = {}
 
     def update(self, prompt: List[BaseMessage], value: str):
-        prompt_key = tuple(prompt)  # convert prompt to tuple to use it as dict key
+        prompt_key = self.to_hashable(prompt)
         self.cache[prompt_key] = value
         self.save_to_file()
 
@@ -26,8 +26,11 @@ class LLMCache:
         with open(self.filename, 'wb') as f:
             pickle.dump(self.cache, f)
 
+    def to_hashable(self, prompt: List[BaseMessage]):
+        return tuple([str(msg) for msg in prompt])
+
     def get_llm_result(self, llm, prompt):
-        prompt_key = tuple(prompt)  # convert prompt to tuple to use it as dict key
+        prompt_key = self.to_hashable(prompt)
         if prompt_key in self.cache:
             return self.cache[prompt_key]
         else:
@@ -43,9 +46,10 @@ class LLMCache:
 
 # todo: better name
 class LLMInferer():
-    def __init__(self, llm: BaseChatModel):
+    def __init__(self, llm: BaseChatModel, run_manager: RunManager):
         self.llm = llm
         self.cache = LLMCache(llm)
+        self.run_manager = run_manager
 
     # short names for logging
     phase_for_logging = {
@@ -62,8 +66,8 @@ class LLMInferer():
         InferenceStep.RESOLVE: "__c_resolution"
     }
 
-    def save_output(self, content: str, phase: DevPhase, stage: InferenceStep, run_manager: RunManager):
-        dir_ = f"cache/run_{run_manager.run_no}/"
+    def save_output(self, content: str, phase: DevPhase, stage: InferenceStep):
+        dir_ = f"cache/run_{self.run_manager.run_no}/"
         os.makedirs(dir_, exist_ok=True)
         filename = f"{dir_}/{self.phase_for_logging[phase]}{self.step_for_logging[stage]}.txt"
         with open(filename, "w") as file: file.write(content)
@@ -71,28 +75,29 @@ class LLMInferer():
     def llm_result(self, prompt: List[BaseMessage]):
         return self.cache.get_llm_result(self.llm, prompt)
 
-    def get_thoughtful_reponse(self, phase: DevPhase, llm: BaseChatModel, run_manager: RunManager,
+    def get_thoughtful_reponse(self, phase: DevPhase,
         verbose=True, save=True, save_intermediate=True, format_instructions=None,
         **prompt_vars) -> str:
 
+        if verbose: print(f">>> {phase}")
+
         # Step 1: Initial response
         prompt = get_prompt(phase, InferenceStep.IDEATE, **prompt_vars)
-        initial_response = self.llm_result(prompt).content
+        initial_response = self.llm_result(prompt)
         if verbose: print(f"> Initial response:\n{initial_response}\n")    
-        if save_intermediate: self.save_output(initial_response, phase, InferenceStep.IDEATE, run_manager=run_manager)
+        if save_intermediate: self.save_output(initial_response, phase, InferenceStep.IDEATE)
             
         # Step 2: Self-critique
-        prompt = get_prompt(phase, InferenceStep.CRITIQUE, **prompt_vars)
-        critique = self.llm_result(prompt).content
+        prompt = get_prompt(phase, InferenceStep.CRITIQUE, initial_response=initial_response, **prompt_vars)
+        critique = self.llm_result(prompt)
         if verbose: print(f"> Self-critique:\n{critique}\n")
-        if save_intermediate: self.save_output(critique, phase, InferenceStep.CRITIQUE, run_manager=run_manager)
+        if save_intermediate: self.save_output(critique, phase, InferenceStep.CRITIQUE)
 
         # Step 3: Thoughtful response
         if format_instructions: prompt_vars["format_instructions"] = format_instructions  # only use format instructions in last step
-        prompt = get_prompt(phase, InferenceStep.RESOLVE, **prompt_vars)
-        thoughtful_response = self.llm_result(prompt).content
+        prompt = get_prompt(phase, InferenceStep.RESOLVE, initial_response=initial_response, critique=critique, **prompt_vars)
+        thoughtful_response = self.llm_result(prompt)
         if verbose: print(f"> Thoughtful response:\n{thoughtful_response}\n")
-        if save_intermediate: self.save_output(thoughtful_response, phase, InferenceStep.RESOLVE, run_manager=run_manager)
+        if save_intermediate: self.save_output(thoughtful_response, phase, InferenceStep.RESOLVE)
         
         return thoughtful_response
-

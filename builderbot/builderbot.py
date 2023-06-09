@@ -1,10 +1,10 @@
 import os
 from dotenv import load_dotenv
 from langchain.chat_models import ChatOpenAI
+from .inference import LLMInferer
 from .run_manager import RunManager
 from .parsers import code_base_parser, project_description_parser, CodeBase
-from .llm_inference import get_thoughtful_reponse
-from .stages import Stage
+from .stages import DevPhase
 
 class BuilderBot:
     def __init__(self, model_name: str ="gpt-3.5-turbo"):
@@ -17,9 +17,11 @@ class BuilderBot:
         self.run_manager = RunManager()
         self.run_manager.start_run()
 
+        inferer = LLMInferer(self.llm, self.run_manager)
+
         # Step 1: Understand
-        project_description = get_thoughtful_reponse(
-            Stage.UNDERSTAND,
+        project_description = inferer.get_thoughtful_reponse(
+            DevPhase.UNDERSTAND,
             llm=self.llm,
             run_manager=self.run_manager,
             user_goal=self.goal,
@@ -31,16 +33,16 @@ class BuilderBot:
         project_description = parsed_project_description.to_str()
 
         # Step 2: Architect
-        architecture = get_thoughtful_reponse(
-            Stage.ARCHITECTURE, 
+        architecture = inferer.get_thoughtful_reponse(
+            DevPhase.ARCHITECTURE, 
             llm=self.llm,
             run_manager=self.run_manager,
             project_description=project_description
         )
 
         # Step 3: Structure Code
-        code_skeleton = get_thoughtful_reponse(
-            Stage.STRUCTURE_CODE,
+        code_skeleton = inferer.get_thoughtful_reponse(
+            DevPhase.STRUCTURE_CODE,
             llm=self.llm,
             run_manager=self.run_manager,
             project_description=project_description,
@@ -51,8 +53,8 @@ class BuilderBot:
         self.create_project(parsed_code_skeleton, directory="project")
 
         # Step 3: Structure Tests
-        test_skeleton = get_thoughtful_reponse(
-            Stage.STRUCTURE_TESTS,
+        test_skeleton = inferer.get_thoughtful_reponse(
+            DevPhase.STRUCTURE_TESTS,
             llm=self.llm,
             run_manager=self.run_manager,
             project_description=project_description,
