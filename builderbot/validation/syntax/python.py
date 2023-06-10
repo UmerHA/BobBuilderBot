@@ -15,7 +15,7 @@ class PythonValidator(SyntaxValidator):
             black.format_str(code, mode=black.Mode())
         except Exception as e:
             return False, traceback.format_exc()
-        return True
+        return True, None
         
     @classmethod
     def format(cls, code: str) -> str:

@@ -17,30 +17,26 @@ class CodeFile(BaseModel):
 class CodeBase(BaseModel):
     files: List[CodeFile] = Field(description="a code file")
 
-    def with_change(self, change: CodeChange) -> CodeBase:
-        '''Update code base by including a change'''
+    def with_change(self, codebase_change: CodeChange) -> CodeBase:
         new_code_base = deepcopy(self)
-        for file_change in change.files:
-
-            # Find the corresponding file in the code base
+        for file_change in codebase_change.files:
             for file in new_code_base.files:
-                if file.name != file_change.name:
-                    continue
-
-                for specific_change in reversed(sorted(file_change.changes, key=lambda x: x.line_number_start)):
-                    if isinstance(specific_change, Insertion):
-                        # For an Insertion, we insert the new lines at the given line number
-                        for index, new_line in enumerate(specific_change.new_lines):
-                            file.lines.insert(specific_change.line_number_start + index, CodeLine(content=new_line))
-                    elif isinstance(specific_change, Deletion):
-                        # For a Deletion, we delete the lines from start to end
-                        del file.lines[specific_change.line_number_start - 1: specific_change.line_number_end]
-                    elif isinstance(specific_change, Replacement):
-                        # For a Replacement, we replace the lines from start to end with the new lines
-                        del file.lines[specific_change.line_number_start - 1: specific_change.line_number_end]
-                        for index, new_line in enumerate(specific_change.new_lines):
-                            file.lines.insert(specific_change.line_number_start - 1 + index, CodeLine(content=new_line))
-        
+                if file.name != file_change.name: continue  # Find corresponding file
+                # 1) split content into lines, 2) apply change ops on list of lines, 3) join back
+                lines = file.lines()
+                for change in reversed(sorted(file_change.changes, key=lambda x: x.line_number_start)):
+                    if isinstance(change, Insertion):
+                        new_lines = change.new_code.split("\n")
+                        for index, new_line in enumerate(new_lines):
+                            lines.insert(change.line_number_start + index, new_line)
+                    elif isinstance(change, Deletion):
+                        del lines[change.line_number_start - 1: change.line_number_end]
+                    elif isinstance(change, Replacement):
+                        del lines[change.line_number_start - 1: change.line_number_end]
+                        new_lines = change.new_code.split("\n")
+                        for index, new_line in enumerate(new_lines):
+                            lines.insert(change.line_number_start - 1 + index, new_line)
+                file.overwrite("\n".join(lines))
         return new_code_base
 
     def show_file(self, filename) -> CodeFile:

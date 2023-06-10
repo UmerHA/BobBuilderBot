@@ -93,7 +93,7 @@ class LLMInferer():
         **prompt_vars) -> str:
         '''Get LLM response using the SmartGPT workflow'''
         try_no_str = f" (try no {try_no})" if try_no else ""
-        if verbose: print(f">>> {phase}{try_no_str}")
+        print(f">>> {phase}{try_no_str}")
         common_kwargs = {
             "verbose": verbose,
             "save": save,
@@ -116,7 +116,7 @@ class LLMInferer():
         **prompt_vars) -> str:
         '''Get LLM response'''
         try_no_str = f" (try no {try_no})" if try_no else ""
-        if verbose: print(f">>> {phase}{try_no_str}")
+        print(f">>> {phase}{try_no_str}")
         if format_instructions: prompt_vars["format_instructions"] = format_instructions
         return self._get_response(phase, InferenceStep.SIMPLE, "Response", verbose, save, try_no, **prompt_vars)
 
