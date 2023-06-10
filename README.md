@@ -56,7 +56,7 @@ This is an incomplete list of what's to do:
 
 ## How to use
 
-**Step 1: ** Let Bob build
+**Step 1:** Let Bob build
 ```
 from builderbot import BuilderBot
 bob = BuilderBot("gpt-4")
@@ -65,7 +65,7 @@ bob.build(task)
 ```
 Bob will create your project in the `output` folder.
 
-**Step 2: ** Deploy to replit
+**Step 2:** Deploy to replit
 On [replit](replit.com/), log in, create a new repl and copy paste the code into it.
 ## How to contribute
 todo
