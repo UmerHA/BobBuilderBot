@@ -62,7 +62,8 @@ class BuilderBot:
             format_instructions=code_base_parser.get_format_instructions()
         )
         self.code_base = code_base_parser.parse(code_base)
-        self.create_project(self.code_base, directory="project")
+        self.code_base.directory = "project"
+        self.code_base.save(output_dir=self.run_manager.output_dir)
 
         # Step 3: Structure Tests
         test_base = self.inferer.get_thoughtful_reponse(
@@ -73,39 +74,33 @@ class BuilderBot:
             format_instructions=code_base_parser.get_format_instructions()
         )
         self.test_base = code_base_parser.parse(test_base)
-        self.create_project(self.code_base, directory="test")
+        self.test_base.directory = "test"
+        self.test_base.save(output_dir=self.run_manager.output_dir)
 
         # Step 4: Write code
         for req in self.requirements:
-            self.implement_feature(req)
+            self.code_base = self.implement_feature(req)
+            self.code_base.save(output_dir=self.run_manager.output_dir)
 
         # Step 5: Write tests
         pass
 
         # Step 6: Deploy
-        pass
+        pass # out of scope -  will be done manu
 
         # Step 7: Improve
-        pass
+        pass # out of scope
 
 
     # # # # # # # # # # # # # # # # # #
     # Helper functions for each phase #
     # # # # # # # # # # # # # # # # # #
 
-    def create_project(self, codebase: CodeBase, directory: str) -> None:
-        home_dir = f"output/run_{self.run_manager.run_no}/{directory}/"
-        for code_file in codebase.files:
-            full_path = os.path.join(home_dir, code_file.name)
-            os.makedirs(os.path.dirname(full_path), exist_ok=True)           
-            with open(full_path, "w") as f:
-                f.write(code_file.content)
-
     def format_errors(self, errors: List[Tuple[str, str]]) -> str:
         bla = "\n\n".join([f"In {filename}:\n{err_msg}" for filename, err_msg in errors])
         return bla
 
-    def implement_feature(self, requirement: Requirement) -> None:
+    def implement_feature(self, requirement: Requirement) -> CodeBase:
         if self.verbose: print(f"Implementing feature: {requirement.content}")
         max_iter, i = self.MAX_ITER_PER_FEATURE, 1
         current_errors = []
@@ -118,24 +113,22 @@ class BuilderBot:
                 if self.verbose: print(f"Implementation not sucessful.\nErrors:\n{current_errors}\nTrying again.\n\n")
                 if i >= max_iter: raise Exception(f"Could not implement this requirements: {requirement}")
             i += 1
-        return
+        return new_codebase
 
     def try_implementing_feature(self, requirement: Requirement, try_no:int, errors: Optional[str]) -> CodeBase:
         code = SimpleSummarizer().summarize(self.code_base)  # represent code base as str
         common_kwargs = {
             "llm": self.llm,
             "run_manager": self.run_manager,
-            "verbose": self.verbose,
+            "verbose": True, # todo: change back
             "try_no": try_no,
             "user_goal": self.goal,
             "code_base": code,
             "feature": requirement,
             "format_instructions": code_change_parser.get_format_instructions()
         }
-        if errors:
-            change_json = self.inferer.get_simple_response(DevPhase.IMPROVE_CODE, errors=errors, **common_kwargs)
-        else:
-            change_json = self.inferer.get_thoughtful_reponse(DevPhase.WRITE_CODE, **common_kwargs)
+        if not errors: errors = "code not checked yet, so no errors yet"
+        change_json = self.inferer.get_simple_response(DevPhase.IMPROVE_CODE, errors=errors, **common_kwargs)
         change = code_change_parser.parse(change_json)
         return self.code_base.with_change(change)
 

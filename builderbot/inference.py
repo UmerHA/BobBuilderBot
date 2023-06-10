@@ -78,7 +78,7 @@ class LLMInferer():
     }
 
     def save_output(self, content: str, phase: DevPhase, stage: InferenceStep, try_no: Optional[int] = None):
-        dir_ = f"cache/run_{self.run_manager.run_no}/"
+        dir_ = self.run_manager.cache_dir
         os.makedirs(dir_, exist_ok=True)
         try_str = f"_try_{try_no}" if try_no else ""
         filename = f"{dir_}/{self.phase_for_logging[phase]}{self.step_for_logging[stage]}{try_str}.txt"

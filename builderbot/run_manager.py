@@ -23,3 +23,11 @@ class RunManager():
 
     def save(self):
         self.runs.to_csv(self.file, index=False)
+
+    @property
+    def cache_dir(self):
+        return f"cache/run_{self.run_no}/"
+
+    @property
+    def output_dir(self):
+        return f"output/run_{self.run_manager.run_no}/"
