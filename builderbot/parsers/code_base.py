@@ -5,15 +5,18 @@ from typing import List
 from langchain.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
 from .code_skeleton import CodeSkeleton
-from .code_change import CodeChange, Insertion, Deletion, Update
+from .code_change import CodeChange, Insertion, Deletion, Replacement
 
 
 class CodeLine(BaseModel):
     content: str = Field(description="a line of code")
+    def __str__(self) -> str: return self.content
 
 class CodeFile(BaseModel):
     name: str = Field(description="full path to this file")
-    lines: List[CodeLine] = Field(description="content of this file")    
+    lines: List[CodeLine] = Field(description="content of this file")
+    def __str__(self) -> str: return "\n".join([line.content for line in self.lines])
+    def overwrite(self, content: str) -> None: self.lines = [CodeLine(content=line) for line in content.split("\n")]
 
 class CodeBase(BaseModel):
     files: List[CodeFile] = Field(description="a code file")
@@ -31,15 +34,15 @@ class CodeBase(BaseModel):
                 for specific_change in reversed(sorted(file_change.changes, key=lambda x: x.line_number_start)):
                     if isinstance(specific_change, Insertion):
                         # For an Insertion, we insert the new lines at the given line number
-                        for index, new_line in enumerate(reversed(specific_change.new_lines)):
+                        for index, new_line in enumerate(specific_change.new_lines):
                             file.lines.insert(specific_change.line_number_start + index, CodeLine(content=new_line))
                     elif isinstance(specific_change, Deletion):
                         # For a Deletion, we delete the lines from start to end
                         del file.lines[specific_change.line_number_start - 1: specific_change.line_number_end]
-                    elif isinstance(specific_change, Update):
-                        # For an Update, we replace the lines from start to end with the new lines
+                    elif isinstance(specific_change, Replacement):
+                        # For a Replacement, we replace the lines from start to end with the new lines
                         del file.lines[specific_change.line_number_start - 1: specific_change.line_number_end]
-                        for index, new_line in enumerate(reversed(specific_change.new_lines)):
+                        for index, new_line in enumerate(specific_change.new_lines):
                             file.lines.insert(specific_change.line_number_start - 1 + index, CodeLine(content=new_line))
         
         return new_code_base
@@ -48,8 +51,13 @@ class CodeBase(BaseModel):
     def from_skeleton(cls, code_skeleton: CodeSkeleton) -> CodeBase:
         files: List[CodeFile] = []
         for file in code_skeleton.files:
-            lines = [CodeLine(content=line) for line in file.to_str().split("\n")]
+            lines = [CodeLine(content=line) for line in str(file).split("\n")]
             files.append(CodeFile(name=file.name, lines=lines))
         return cls(files=files)
+
+    def show_file(self, filename) -> CodeFile:
+        for file in self.files:
+            if file.name == filename: return file
+        raise ValueError(f"File with name {filename} not found in code base")
 
 code_base_parser = PydanticOutputParser(pydantic_object=CodeBase)

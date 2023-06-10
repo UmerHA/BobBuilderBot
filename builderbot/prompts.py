@@ -10,19 +10,22 @@ phase2file = {
     DevPhase.STRUCTURE_CODE: "3_create_code_skeleton",
     DevPhase.STRUCTURE_TESTS: "4_create_test_skeleton",
     DevPhase.WRITE_CODE: "5_write_code",
-    DevPhase.WRITE_TESTS: "6_write_test",
-    DevPhase.DEPLOY: "7_deploy",
-    DevPhase.IMPROVE: "8_improve"
+    DevPhase.IMPROVE_CODE: "6_improve_code",
+    DevPhase.WRITE_TESTS: "7_write_test",
+    DevPhase.IMPROVE_TESTS: "8_improve_test",
+    DevPhase.DEPLOY: "9_deploy",
+    DevPhase.IMPROVE: "10_improve"
 }
 
 step2file = {
-    InferenceStep.IDEATE: "ideate",
-    InferenceStep.CRITIQUE: "reflect",
-    InferenceStep.RESOLVE: "resolve",
+    InferenceStep.SIMPLE: "",
+    InferenceStep.IDEATE: "__ideate",
+    InferenceStep.CRITIQUE: "__reflect",
+    InferenceStep.RESOLVE: "__resolve",
 }
 
 def prompt_file(phase: DevPhase, step: InferenceStep) -> str:
-    return phase2file[phase] + "__" + step2file[step]
+    return phase2file[phase] + step2file[step]
 
 def load_prompt(phase: DevPhase, step: InferenceStep) -> ChatPromptTemplate:
     path_to_system_prompt = "prompts/system.txt"

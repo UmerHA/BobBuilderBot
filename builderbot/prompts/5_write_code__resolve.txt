@@ -11,6 +11,7 @@ Here are your initial thoughts on how to implement the feature:
 Here's you self-reflection about:
 {critique}
 
-With your critique in mind, give an improved implementation. 
+With your critique in mind, give an improved implementation in the form descruibed below.
+You can use Insertion`, `Deletion` and `Replacement` to descibe the code updates.
 
 {format_instructions}

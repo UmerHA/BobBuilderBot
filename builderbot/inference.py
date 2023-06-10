@@ -45,6 +45,12 @@ class LLMCache:
             if os.path.exists(self.filename):
                 os.remove(self.filename)
 
+    def delete_containing(self, text: str):
+        '''Delete all keys containing given text'''
+        keys_to_delete = [k for k in self.cache.keys() if text in str(k)]
+        for k in keys_to_delete:
+            del self.cache[k]
+        print(f"Deleted {len(keys_to_delete)} keys")
 
 # todo: better name
 class LLMInferer():
@@ -60,9 +66,12 @@ class LLMInferer():
         DevPhase.STRUCTURE_CODE: "3_skeleton_code",
         DevPhase.STRUCTURE_TESTS: "4_skeleton_test",
         DevPhase.WRITE_CODE: "5_write_code",
-        DevPhase.WRITE_TESTS: "6_write_test"
+        DevPhase.IMPROVE_CODE: "6_improve_code",
+        DevPhase.WRITE_TESTS: "7_write_test",
+        DevPhase.IMPROVE_TESTS: "7_improve_test"
     }
     step_for_logging = {
+        InferenceStep.SIMPLE: "",
         InferenceStep.IDEATE: "__a_ideation",
         InferenceStep.CRITIQUE: "__b_critique",
         InferenceStep.RESOLVE: "__c_resolution"
@@ -82,26 +91,41 @@ class LLMInferer():
         verbose:bool=True, save:bool=True, format_instructions:Optional[str]=None,
         try_no:Optional[int]=None,
         **prompt_vars) -> str:
-
-        if verbose: print(f">>> {phase}")
-
+        '''Get LLM response using the SmartGPT workflow'''
+        try_no_str = f" (try no {try_no})" if try_no else ""
+        if verbose: print(f">>> {phase}{try_no_str}")
+        common_kwargs = {
+            "verbose": verbose,
+            "save": save,
+            "try_no": try_no,
+            **prompt_vars
+        }
         # Step 1: Initial response
-        prompt = get_prompt(phase, InferenceStep.IDEATE, **prompt_vars)
-        initial_response = self.llm_result(prompt)
-        if verbose: print(f"> Initial response:\n{initial_response}\n")    
-        if save: self.save_output(initial_response, phase, InferenceStep.IDEATE, try_no)
-            
+        initial_response = self._get_response(phase, InferenceStep.IDEATE, "Initial response", **common_kwargs)
         # Step 2: Self-critique
-        prompt = get_prompt(phase, InferenceStep.CRITIQUE, initial_response=initial_response, **prompt_vars)
-        critique = self.llm_result(prompt)
-        if verbose: print(f"> Self-critique:\n{critique}\n")
-        if save: self.save_output(critique, phase, InferenceStep.CRITIQUE, try_no)
-
+        common_kwargs["initial_response"] = initial_response
+        critique = self._get_response(phase, InferenceStep.CRITIQUE, "Self-critique", **common_kwargs)
         # Step 3: Thoughtful response
-        if format_instructions: prompt_vars["format_instructions"] = format_instructions  # only use format instructions in last step
-        prompt = get_prompt(phase, InferenceStep.RESOLVE, initial_response=initial_response, critique=critique, **prompt_vars)
-        thoughtful_response = self.llm_result(prompt)
-        if verbose: print(f"> Thoughtful response:\n{thoughtful_response}\n")
-        if save: self.save_output(thoughtful_response, phase, InferenceStep.RESOLVE, try_no)
-        
+        common_kwargs["critique"] = critique
+        if format_instructions: common_kwargs["format_instructions"] = format_instructions  # only use format instructions in last step
+        thoughtful_response = self._get_response(phase, InferenceStep.RESOLVE, "Thoughtful response", **common_kwargs)
         return thoughtful_response
+    
+    def get_simple_response(self, phase: DevPhase,
+        verbose:bool=True, save:bool=True, format_instructions:Optional[str]=None,
+        try_no:Optional[int]=None,
+        **prompt_vars) -> str:
+        '''Get LLM response'''
+        try_no_str = f" (try no {try_no})" if try_no else ""
+        if verbose: print(f">>> {phase}{try_no_str}")
+        if format_instructions: prompt_vars["format_instructions"] = format_instructions
+        self._get_response(phase, InferenceStep.SIMPLE, "Response", verbose, save, try_no, **prompt_vars)
+
+    def _get_response(self, phase: DevPhase, step: InferenceStep, response_prefix: str,
+        verbose:bool=True, save:bool=True, try_no:Optional[int]=None,
+        **prompt_vars) -> str:
+        prompt = get_prompt(phase, step, **prompt_vars)
+        response = self.llm_result(prompt)
+        if verbose: print(f">  {response_prefix}:\n{response}\n")    
+        if save: self.save_output(response, phase, step, try_no)
+        return response

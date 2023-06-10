@@ -66,6 +66,7 @@ bob.build(task)
 Bob will create your project in the `output` folder.
 
 **Step 2:** Deploy to replit
+
 On [replit](replit.com/), log in, create a new repl and copy paste the code into it.
 ## How to contribute
 todo
