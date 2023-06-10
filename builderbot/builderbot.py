@@ -15,6 +15,7 @@ class BuilderBot:
         openai_api_key = os.getenv("OPENAI_API_KEY")
         self.llm = ChatOpenAI(openai_api_key=openai_api_key, model_name=model_name)
         self.cache_filename = cache_filename
+        # todo: verify cache dir exists (otherwise well get errors after llm calls)
 
     def build(self, goal: str, verbose=True) -> None:
         self.goal = goal
@@ -58,7 +59,7 @@ class BuilderBot:
         )
         self.code_skeleton = code_skeleton_parser.parse(code_skeleton)
         self.create_project(self.code_skeleton, directory="project")
-        self.code_base = CodeBase.from_code_skeleton(self.code_skeleton)
+        self.code_base = CodeBase.from_skeleton(self.code_skeleton)
 
         # Step 3: Structure Tests
         test_skeleton = self.inferer.get_thoughtful_reponse(
@@ -74,7 +75,8 @@ class BuilderBot:
         self.create_project(self.test_skeleton, directory="test")
 
         # Step 4: Write code
-        pass
+        for req in self.requirements:
+            self.implement_feature(req)
 
         # Step 5: Write tests
         pass
@@ -102,21 +104,20 @@ class BuilderBot:
                     f.write(comment+func.signature+'\n\n')
 
     def implement_feature(self, requirement: Requirement) -> None:
-
         if self.verbose: print(f"Implementing feature: {requirement.content}")
-
         max_iter = 3
-        i = 0
+        i = 1
         while True:
-            if i >= max_iter:
-                raise Exception(f"Could not implement this requirements: {requirement}")
-            new_codebase = self.try_implementing_feature(requirement)
+            new_codebase = self.try_implementing_feature(requirement, try_no=i)
             if self.check_implementation(requirement, new_codebase):
                 break
+            else:
+                if self.verbose: print("Implementation not sucessful. Trying again.")
+                if i >= max_iter: raise Exception(f"Could not implement this requirements: {requirement}")
             i += 1
         return
 
-    def try_implementing_feature(self, requirement: Requirement) -> CodeBase:
+    def try_implementing_feature(self, requirement: Requirement, try_no:int) -> CodeBase:
         # get context
         code = SimpleSummarizer().summarize(self.code_base)
 
@@ -126,6 +127,7 @@ class BuilderBot:
             llm=self.llm,
             run_manager=self.run_manager,
             verbose=self.verbose,
+            try_no=try_no,
             user_goal=self.goal,
             code_base=code,
             feature=requirement,

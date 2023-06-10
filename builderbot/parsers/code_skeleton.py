@@ -17,9 +17,9 @@ class CodeFile(BaseModel):
     def to_str(self) -> str:
         if self.functions:
             f = ["   " + func.signature for func in self.functions]
-            return "\n\n".join(f) + "\n"             
+            return "\n\n".join(f)
         else:
-            return "\n"
+            return ""
 
 class CodeSkeleton(BaseModel):
     files: List[CodeFile] = Field(description="a code file")

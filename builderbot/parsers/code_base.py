@@ -45,10 +45,10 @@ class CodeBase(BaseModel):
         return new_code_base
 
     @classmethod
-    def from_code_skeleton(cls, code_skeleton: CodeSkeleton) -> CodeBase:
+    def from_skeleton(cls, code_skeleton: CodeSkeleton) -> CodeBase:
         files: List[CodeFile] = []
         for file in code_skeleton.files:
-            lines = [CodeLine(content=l) for l in file.to_str().split("\n")]
+            lines = [CodeLine(content=line) for line in file.to_str().split("\n")]
             files.append(CodeFile(name=file.name, lines=lines))
         return cls(files=files)
 

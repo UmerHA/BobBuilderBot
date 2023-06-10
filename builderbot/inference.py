@@ -68,17 +68,19 @@ class LLMInferer():
         InferenceStep.RESOLVE: "__c_resolution"
     }
 
-    def save_output(self, content: str, phase: DevPhase, stage: InferenceStep):
+    def save_output(self, content: str, phase: DevPhase, stage: InferenceStep, try_no: Optional[int] = None):
         dir_ = f"cache/run_{self.run_manager.run_no}/"
         os.makedirs(dir_, exist_ok=True)
-        filename = f"{dir_}/{self.phase_for_logging[phase]}{self.step_for_logging[stage]}.txt"
+        try_str = f"_try_{try_no}" if try_no else ""
+        filename = f"{dir_}/{self.phase_for_logging[phase]}{self.step_for_logging[stage]}{try_str}.txt"
         with open(filename, "w") as file: file.write(content)
 
     def llm_result(self, prompt: List[BaseMessage]):
         return self.cache.get_llm_result(self.llm, prompt)
 
     def get_thoughtful_reponse(self, phase: DevPhase,
-        verbose=True, save=True, format_instructions=None,
+        verbose:bool=True, save:bool=True, format_instructions:Optional[str]=None,
+        try_no:Optional[int]=None,
         **prompt_vars) -> str:
 
         if verbose: print(f">>> {phase}")
@@ -87,19 +89,19 @@ class LLMInferer():
         prompt = get_prompt(phase, InferenceStep.IDEATE, **prompt_vars)
         initial_response = self.llm_result(prompt)
         if verbose: print(f"> Initial response:\n{initial_response}\n")    
-        if save: self.save_output(initial_response, phase, InferenceStep.IDEATE)
+        if save: self.save_output(initial_response, phase, InferenceStep.IDEATE, try_no)
             
         # Step 2: Self-critique
         prompt = get_prompt(phase, InferenceStep.CRITIQUE, initial_response=initial_response, **prompt_vars)
         critique = self.llm_result(prompt)
         if verbose: print(f"> Self-critique:\n{critique}\n")
-        if save: self.save_output(critique, phase, InferenceStep.CRITIQUE)
+        if save: self.save_output(critique, phase, InferenceStep.CRITIQUE, try_no)
 
         # Step 3: Thoughtful response
         if format_instructions: prompt_vars["format_instructions"] = format_instructions  # only use format instructions in last step
         prompt = get_prompt(phase, InferenceStep.RESOLVE, initial_response=initial_response, critique=critique, **prompt_vars)
         thoughtful_response = self.llm_result(prompt)
         if verbose: print(f"> Thoughtful response:\n{thoughtful_response}\n")
-        if save: self.save_output(thoughtful_response, phase, InferenceStep.RESOLVE)
+        if save: self.save_output(thoughtful_response, phase, InferenceStep.RESOLVE, try_no)
         
         return thoughtful_response
