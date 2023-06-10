@@ -45,8 +45,11 @@ class CodeBase(BaseModel):
         return new_code_base
 
     @classmethod
-    def from_code_skeleton(code_skeleton: CodeSkeleton) -> CodeBase:
-        # todo
-        raise NotImplementedError()
+    def from_code_skeleton(cls, code_skeleton: CodeSkeleton) -> CodeBase:
+        files: List[CodeFile] = []
+        for file in code_skeleton.files:
+            lines = [CodeLine(content=l) for l in file.to_str().split("\n")]
+            files.append(CodeFile(name=file.name, lines=lines))
+        return cls(files=files)
 
 code_base_parser = PydanticOutputParser(pydantic_object=CodeBase)

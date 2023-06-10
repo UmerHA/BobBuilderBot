@@ -1,17 +1,11 @@
 You are a senior software architect responsible for deciding the architecture and tech stack for a new project.
 Here is the project description:
-[Begin of description]
 {project_description}
-[End of description]
 
 Here are your initial thoughts on the architecture and tech stack for the project:
-[Begin of thoughts]
 {initial_response}
-[End of thoughts]
 
 Because you are a good senior software architect, you reflected on your intial thoughts. Here's your self-critique:
-[Begin of critique]
 {critique}
-[End of critique]
 
 With your critique in mind, answer the question again: What is an appropriate architecture and tech stack? Keep in mind, as responsible architect, you need decide on an architecture and tech stack (and not list choices).

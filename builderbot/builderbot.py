@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from typing import Optional
 from langchain.chat_models import ChatOpenAI
 from .inference import LLMInferer
 from .run_manager import RunManager
@@ -9,17 +10,18 @@ from .stages import DevPhase
 from .code_base_summarizer import SimpleSummarizer
 
 class BuilderBot:
-    def __init__(self, model_name: str ="gpt-3.5-turbo"):
+    def __init__(self, model_name: str ="gpt-3.5-turbo", cache_filename: Optional[str] = None) -> None:
         load_dotenv()
         openai_api_key = os.getenv("OPENAI_API_KEY")
         self.llm = ChatOpenAI(openai_api_key=openai_api_key, model_name=model_name)
+        self.cache_filename = cache_filename
 
-    def build(self, goal: str, verbose=True):
+    def build(self, goal: str, verbose=True) -> None:
         self.goal = goal
         self.verbose = verbose
         self.run_manager = RunManager()
         self.run_manager.start_run()
-        self.inferer = LLMInferer(self.llm, self.run_manager)
+        self.inferer = LLMInferer(self.llm, self.run_manager, self.cache_filename)
 
         # Step 1: Understand
         project_description = self.inferer.get_thoughtful_reponse(

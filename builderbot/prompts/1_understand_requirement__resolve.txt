@@ -1,17 +1,11 @@
 You are an expert software architect and project manager. You are starting a new project and your client has stated this as objective:
-[Begin of objective]
 {user_goal}
-[End of objective]
 
 You have translated the high-level user objective into a full project description:
-[Begin of project description]
 {initial_response}
-[End of project description]
 
 Here's your self-critique of your initial response:
-[Begin of critique]
 {critique}
-[Begin of critique]
 
 With your critique in mind, generate an improved project description.
  

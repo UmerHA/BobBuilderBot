@@ -1,12 +1,8 @@
 You are a senior software engineer tasked with implementing a new project.
 Here is the project description:
-[Begin of description]
 {project_description}
-[End of description]
 
 Here is a description of the decided architecture and tech stack:
-[Begin of architecture]
 {architecture}
-[End of architecture]
 
 How will you do unit and integration testing for this project? Let's create test files and define tests on a high level. So: Which test files do you need to create? For each file, provide a high-level description of the content. Then, for each file, provide a list of function signatures.

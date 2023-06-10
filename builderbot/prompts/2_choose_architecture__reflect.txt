@@ -1,12 +1,8 @@
 You are a senior software architect. You are with deciding on the architecture and tech stack for a new project.
 Here is the project description:
-[Begin of description]
 {project_description}
-[End of description]
 
 Here are your initial thoughts on the architecture and tech stack for the project:
-[Begin of thoughts]
 {initial_response}
-[End of thoughts]
 
 Take your time and reflect on these thoughts. Is this a good architecture that matche the project goal? And is the tech stack approriate? Explain your thoughts.

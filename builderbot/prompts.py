@@ -2,6 +2,7 @@ from typing import List
 from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
 from langchain.schema import BaseMessage
 from .stages import DevPhase, InferenceStep
+from .utils import load_file
 
 phase2file = {
     DevPhase.UNDERSTAND: "1_understand_requirement",
@@ -20,15 +21,14 @@ step2file = {
     InferenceStep.RESOLVE: "resolve",
 }
 
-
 def prompt_file(phase: DevPhase, step: InferenceStep) -> str:
     return phase2file[phase] + "__" + step2file[step]
 
 def load_prompt(phase: DevPhase, step: InferenceStep) -> ChatPromptTemplate:
     path_to_system_prompt = "prompts/system.txt"
     path_to_human_prompt = f"prompts/{prompt_file(phase, step)}.txt"
-    with open(path_to_system_prompt, "r") as file: system_file_contents = file.read()
-    with open(path_to_human_prompt, "r") as file: human_file_contents = file.read()
+    system_file_contents = load_file(path_to_system_prompt)
+    human_file_contents = load_file(path_to_human_prompt)
     system_msg = SystemMessagePromptTemplate.from_template(system_file_contents)
     human_msg = HumanMessagePromptTemplate.from_template(human_file_contents)
     return ChatPromptTemplate.from_messages([system_msg, human_msg])

@@ -1,6 +1,6 @@
 import os
 import pickle
-from typing import List
+from typing import List, Optional
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema import BaseMessage
 from .prompts import get_prompt
@@ -8,10 +8,12 @@ from .run_manager import RunManager
 from .stages import DevPhase, InferenceStep
 
 
+DEFAULT_CACHE_FILE = "cache/cache.pkl"
+
 class LLMCache:
-    def __init__(self, llm: BaseChatModel, filename: str = 'cache/cache.pkl'):
+    def __init__(self, llm: BaseChatModel, filename: Optional[str] = None):
         self.llm = llm
-        self.filename = filename 
+        self.filename = filename if filename is not None else DEFAULT_CACHE_FILE
         if os.path.exists(filename):
             with open(filename, 'rb') as f: self.cache = pickle.load(f)
         else:
@@ -46,9 +48,9 @@ class LLMCache:
 
 # todo: better name
 class LLMInferer():
-    def __init__(self, llm: BaseChatModel, run_manager: RunManager):
+    def __init__(self, llm: BaseChatModel, run_manager: RunManager, cache_filename: Optional[str] = None):
         self.llm = llm
-        self.cache = LLMCache(llm)
+        self.cache = LLMCache(llm, cache_filename)
         self.run_manager = run_manager
 
     # short names for logging
