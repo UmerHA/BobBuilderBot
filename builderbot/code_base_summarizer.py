@@ -13,8 +13,8 @@ class SimpleSummarizer(BaseCodeBaseSummarizer):
         files = sorted(code.files, key=lambda f: f.name)
         for file in files:
             result += file.name + ":\n"
-            for i, line in enumerate(file.content):
-                result += str(i) + "   " + line.content + "\n"
+            for i, line in enumerate(file.lines):
+                result += str(i+1) + "   " + line.content + "\n"
             result += "\n"
         return result
 

@@ -10,6 +10,7 @@ Repl Auth allows hassle-free user authentication and eliminates the need for
 - handling passwords securely
 - user profiles
 In the code you can assume the user is already securely logged id.
+You **DO NOT** need to implement any features for authentication.
 ---
 Description of Replit Database:
 Replit Database is a user-friendly key-value store within Repls. It can be accessed using the "db" library.

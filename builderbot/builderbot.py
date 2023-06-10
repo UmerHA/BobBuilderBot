@@ -92,16 +92,24 @@ class BuilderBot:
     # Helper functions for each phase #
     # # # # # # # # # # # # # # # # # #
 
+    def comment_indicators(self, filename:str):
+        if filename.endswith(".py"): return "# ", ""
+        if filename.endswith(".js"): return "// ", ""
+        if filename.endswith(".html"): return "<!-- ", " -->"
+        if filename.endswith(".css"): return "/* ", " */"
+        raise ValueError(f"Couldn't figure out how to indicate comments in this file: {filename}")
+
     def create_project(self, codebase: CodeSkeleton, directory: str) -> None:
         home_dir = f"output/run_{self.run_manager.run_no}/{directory}/"
         for code_file in codebase.files:
-            comment = "# " if code_file.name.endswith(".py") else "// "        
+            comment_pre, comment_suf = self.comment_indicators(code_file.name)    
             full_path = os.path.join(home_dir, code_file.name)
             os.makedirs(os.path.dirname(full_path), exist_ok=True)           
             with open(full_path, "w") as f:
-                f.write(comment+code_file.description+'\n\n')
-                for func in code_file.functions:
-                    f.write(comment+func.signature+'\n\n')
+                f.write(comment_pre+code_file.description+comment_suf+'\n\n')
+                if code_file.functions:
+                    for func in code_file.functions:
+                        f.write(comment_pre+func.signature+comment_suf+'\n\n')
 
     def implement_feature(self, requirement: Requirement) -> None:
         if self.verbose: print(f"Implementing feature: {requirement.content}")
@@ -122,7 +130,7 @@ class BuilderBot:
         code = SimpleSummarizer().summarize(self.code_base)
 
         # get proposed code change
-        change = self.inferer.get_thoughtful_reponse(
+        change_json = self.inferer.get_thoughtful_reponse(
             DevPhase.WRITE_CODE,
             llm=self.llm,
             run_manager=self.run_manager,
@@ -133,10 +141,10 @@ class BuilderBot:
             feature=requirement,
             format_instructions=code_change_parser.get_format_instructions()
         )
+        change = code_change_parser.parse(change_json)
 
         if self.verbose: print(f"Proposed change: {change}")
 
-        # merge change and return
         return self.code_base.with_change(change)
 
 
