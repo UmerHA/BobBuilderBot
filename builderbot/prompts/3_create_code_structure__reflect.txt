@@ -8,4 +8,8 @@ Here is a description of the decided architecture and tech stack:
 Here are your initial thoughts on the initial files and their high-level functionality:
 {initial_response}
 
-Take your time and reflect on these thoughts. Is anything missing? Is the functionality approriate and well-written (such that your junior devs will be able to implement them)?
+Reflect on these thoughts.
+- Is anything missing?
+- Is the functionality approriate and well-written (such that your junior devs will be able to implement them)?
+- Will all files compile?
+- Are all necessary imports done?

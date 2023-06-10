@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 from langchain.chat_models import ChatOpenAI
 from .code_base_summarizer import SimpleSummarizer
 from .inference import LLMInferer
-from .parsers import CodeBase, CodeSkeleton, code_change_parser, code_skeleton_parser, project_description_parser
-from .parsers.project_description import Requirement
+from .models import CodeBase, code_base_parser, code_change_parser, project_description_parser
+from .models.project_description import Requirement
 from .run_manager import RunManager
 from .stages import DevPhase
 from .validation.syntax import syntax_validator_from_file_type
@@ -49,31 +49,30 @@ class BuilderBot:
         )
 
         # Step 3: Structure Code
-        code_skeleton = self.inferer.get_thoughtful_reponse(
+        code_base = self.inferer.get_thoughtful_reponse(
             DevPhase.STRUCTURE_CODE,
             llm=self.llm,
             run_manager=self.run_manager,
             verbose=self.verbose,
             project_description=project_description,
             architecture=architecture,
-            format_instructions=code_skeleton_parser.get_format_instructions()
+            format_instructions=code_base_parser.get_format_instructions()
         )
-        self.code_skeleton = code_skeleton_parser.parse(code_skeleton)
-        self.create_project(self.code_skeleton, directory="project")
-        self.code_base = CodeBase.from_skeleton(self.code_skeleton)
+        self.code_base = code_base_parser.parse(code_base)
+        self.create_project(self.code_base, directory="project")
 
         # Step 3: Structure Tests
-        test_skeleton = self.inferer.get_thoughtful_reponse(
+        test_base = self.inferer.get_thoughtful_reponse(
             DevPhase.STRUCTURE_TESTS,
             llm=self.llm,
             run_manager=self.run_manager,
             verbose=self.verbose,
             project_description=project_description,
             architecture=architecture,
-            format_instructions=code_skeleton_parser.get_format_instructions()
+            format_instructions=code_base_parser.get_format_instructions()
         )
-        self.test_skeleton = code_skeleton_parser.parse(test_skeleton)
-        self.create_project(self.test_skeleton, directory="test")
+        self.test_base = code_base_parser.parse(test_base)
+        self.create_project(self.code_base, directory="test")
 
         # Step 4: Write code
         for req in self.requirements:
@@ -100,7 +99,7 @@ class BuilderBot:
         if filename.endswith(".css"): return "/* ", " */"
         raise ValueError(f"Couldn't figure out how to indicate comments in this file: {filename}")
 
-    def create_project(self, codebase: CodeSkeleton, directory: str) -> None:
+    def create_project(self, codebase: CodeBase, directory: str) -> None:
         home_dir = f"output/run_{self.run_manager.run_no}/{directory}/"
         for code_file in codebase.files:
             comment_pre, comment_suf = self.comment_indicators(code_file.name)    

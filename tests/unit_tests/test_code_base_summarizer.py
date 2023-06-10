@@ -1,10 +1,10 @@
-from builderbot.parsers.code_base import CodeBase, CodeFile, CodeLine
+from builderbot.models.code_base import CodeBase, CodeFile, CodeLine
 from builderbot.code_base_summarizer import SimpleSummarizer
 
 def test_simple_summarizer():
     code = CodeBase(files=[
-        CodeFile(name="file1.py", lines=[CodeLine(content="print('Hello, world!')")]),
-        CodeFile(name="file2.py", lines=[CodeLine(content="def add(a, b):"), CodeLine(content="    return a + b")]),
+        CodeFile(name="file1.py", content="print('Hello, world!')"),
+        CodeFile(name="file2.py", content="def add(a, b):\n    return a + b"),
     ])
 
     summarizer = SimpleSummarizer()

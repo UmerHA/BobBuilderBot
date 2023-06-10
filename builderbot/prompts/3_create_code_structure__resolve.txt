@@ -5,12 +5,14 @@ Here is the project description:
 Here is a description of the decided architecture and tech stack:
 {architecture}
 
-Here are your initial thoughts on the test files and their high-level functionality:
+Here are your initial thoughts on the initial files and their high-level functionality:
 {initial_response}
 
 Because you are a good senior software engineer, you reflected on your intial thoughts. Here's your self-critique:
 {critique}
 
-With your critique in mind, answer the question again: Which test files do you need to create? For each file, provide a high-level description of the content. Then, for each file, provide a list of function signatures.
+With your critique in mind, answer the question again:
+Implement each file in a high-level way.
+Make sure each file is syntactically correct, so it could be run.
 
 {format_instructions}

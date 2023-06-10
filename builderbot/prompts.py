@@ -7,8 +7,8 @@ from .utils import load_file
 phase2file = {
     DevPhase.UNDERSTAND: "1_understand_requirement",
     DevPhase.ARCHITECTURE: "2_choose_architecture",
-    DevPhase.STRUCTURE_CODE: "3_create_code_skeleton",
-    DevPhase.STRUCTURE_TESTS: "4_create_test_skeleton",
+    DevPhase.STRUCTURE_CODE: "3_create_code_structure",
+    DevPhase.STRUCTURE_TESTS: "4_create_test_structure",
     DevPhase.WRITE_CODE: "5_write_code",
     DevPhase.IMPROVE_CODE: "6_improve_code",
     DevPhase.WRITE_TESTS: "7_write_test",

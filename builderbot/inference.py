@@ -63,12 +63,12 @@ class LLMInferer():
     phase_for_logging = {
         DevPhase.UNDERSTAND: "1_understand",
         DevPhase.ARCHITECTURE: "2_architecture",
-        DevPhase.STRUCTURE_CODE: "3_skeleton_code",
-        DevPhase.STRUCTURE_TESTS: "4_skeleton_test",
+        DevPhase.STRUCTURE_CODE: "3_structure_code",
+        DevPhase.STRUCTURE_TESTS: "4_structure_tests",
         DevPhase.WRITE_CODE: "5_write_code",
         DevPhase.IMPROVE_CODE: "6_improve_code",
-        DevPhase.WRITE_TESTS: "7_write_test",
-        DevPhase.IMPROVE_TESTS: "7_improve_test"
+        DevPhase.WRITE_TESTS: "7_write_tests",
+        DevPhase.IMPROVE_TESTS: "7_improve_tests"
     }
     step_for_logging = {
         InferenceStep.SIMPLE: "",

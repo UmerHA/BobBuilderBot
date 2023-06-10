@@ -5,4 +5,6 @@ Here is the project description:
 Here is a description of the decided architecture and tech stack:
 {architecture}
 
-Which files do you need to create? For each file, provide a high-level description of the content. Then, for each file, provide a list of function signatures.
+Frist, give a list of all files we need.
+Then, implement each file in a high-level way.
+Make sure each files is syntactically correct, so it could be run.

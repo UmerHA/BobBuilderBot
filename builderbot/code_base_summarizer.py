@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from .parsers import CodeBase
+from .models import CodeBase
 
 class BaseCodeBaseSummarizer:
     @abstractmethod

@@ -8,4 +8,8 @@ Here is a description of the decided architecture and tech stack:
 Here are your initial thoughts on the test files and their high-level functionality:
 {initial_response}
 
-Take your time and reflect. Are any test missing? Is test coverage coode enough?
+Reflect on your initial thoughts:
+- Are any test missing?
+- Is test coverage coode enough?
+- Will all files compile?
+- Are all necessary imports done?

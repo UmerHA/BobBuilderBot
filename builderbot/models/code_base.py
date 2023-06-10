@@ -4,19 +4,15 @@ from copy import deepcopy
 from typing import List
 from langchain.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
-from .code_skeleton import CodeSkeleton
 from .code_change import CodeChange, Insertion, Deletion, Replacement
 
 
-class CodeLine(BaseModel):
-    content: str = Field(description="a line of code")
-    def __str__(self) -> str: return self.content
-
 class CodeFile(BaseModel):
     name: str = Field(description="full path to this file")
-    lines: List[CodeLine] = Field(description="content of this file")
-    def __str__(self) -> str: return "\n".join([line.content for line in self.lines])
-    def overwrite(self, content: str) -> None: self.lines = [CodeLine(content=line) for line in content.split("\n")]
+    content: str = Field(description="content of this file")
+    def __str__(self) -> str: return self.content
+    def overwrite(self, content: str) -> None: self.content = content
+    def lines(self) -> List[str]: return self.content.split("\n")
 
 class CodeBase(BaseModel):
     files: List[CodeFile] = Field(description="a code file")
@@ -46,14 +42,6 @@ class CodeBase(BaseModel):
                             file.lines.insert(specific_change.line_number_start - 1 + index, CodeLine(content=new_line))
         
         return new_code_base
-
-    @classmethod
-    def from_skeleton(cls, code_skeleton: CodeSkeleton) -> CodeBase:
-        files: List[CodeFile] = []
-        for file in code_skeleton.files:
-            lines = [CodeLine(content=line) for line in str(file).split("\n")]
-            files.append(CodeFile(name=file.name, lines=lines))
-        return cls(files=files)
 
     def show_file(self, filename) -> CodeFile:
         for file in self.files:
