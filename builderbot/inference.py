@@ -14,8 +14,8 @@ class LLMCache:
     def __init__(self, llm: BaseChatModel, filename: Optional[str] = None):
         self.llm = llm
         self.filename = filename if filename is not None else DEFAULT_CACHE_FILE
-        if os.path.exists(filename):
-            with open(filename, 'rb') as f: self.cache = pickle.load(f)
+        if os.path.exists(self.filename):
+            with open(self.filename, 'rb') as f: self.cache = pickle.load(f)
         else:
             self.cache = {}
 
@@ -108,8 +108,7 @@ class LLMInferer():
         # Step 3: Thoughtful response
         common_kwargs["critique"] = critique
         if format_instructions: common_kwargs["format_instructions"] = format_instructions  # only use format instructions in last step
-        thoughtful_response = self._get_response(phase, InferenceStep.RESOLVE, "Thoughtful response", **common_kwargs)
-        return thoughtful_response
+        return self._get_response(phase, InferenceStep.RESOLVE, "Thoughtful response", **common_kwargs)
     
     def get_simple_response(self, phase: DevPhase,
         verbose:bool=True, save:bool=True, format_instructions:Optional[str]=None,
@@ -119,7 +118,7 @@ class LLMInferer():
         try_no_str = f" (try no {try_no})" if try_no else ""
         if verbose: print(f">>> {phase}{try_no_str}")
         if format_instructions: prompt_vars["format_instructions"] = format_instructions
-        self._get_response(phase, InferenceStep.SIMPLE, "Response", verbose, save, try_no, **prompt_vars)
+        return self._get_response(phase, InferenceStep.SIMPLE, "Response", verbose, save, try_no, **prompt_vars)
 
     def _get_response(self, phase: DevPhase, step: InferenceStep, response_prefix: str,
         verbose:bool=True, save:bool=True, try_no:Optional[int]=None,

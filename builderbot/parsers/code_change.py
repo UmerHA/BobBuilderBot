@@ -19,7 +19,7 @@ class Deletion(BaseModel):
         return f"Deletion from {self.line_number_start} to {self.line_number_end}"
 
 class Replacement(BaseModel):
-    op_type: Literal['Replace'] = Field('Replacement', description="Type of this operation")
+    op_type: Literal['Replacement'] = Field('Replacement', description="Type of this operation")
     line_number_start: int = Field(..., description="line number where to start the replacement (inclusive)")
     line_number_end: int = Field(..., description="line number where to end the replacement (inclusive)")
     new_lines: List[str] = Field(..., description="new lines of code")

@@ -1,14 +1,15 @@
 import os
-from dotenv import load_dotenv
 from typing import List, Optional, Tuple
+from dotenv import load_dotenv
 from langchain.chat_models import ChatOpenAI
-from .inference import LLMInferer
-from .run_manager import RunManager
-from .parsers import code_skeleton_parser, code_change_parser, project_description_parser, CodeSkeleton, CodeBase
-from .parsers.project_description import Requirement
-from .stages import DevPhase
 from .code_base_summarizer import SimpleSummarizer
-from .validation.syntax import SyntaxValidator
+from .inference import LLMInferer
+from .parsers import CodeBase, CodeSkeleton, code_change_parser, code_skeleton_parser, project_description_parser
+from .parsers.project_description import Requirement
+from .run_manager import RunManager
+from .stages import DevPhase
+from .validation.syntax import syntax_validator_from_file_type
+
 
 class BuilderBot:
     def __init__(self, model_name: str ="gpt-3.5-turbo", cache_filename: Optional[str] = None) -> None:
@@ -111,8 +112,9 @@ class BuilderBot:
                     for func in code_file.functions:
                         f.write(comment_pre+func.signature+comment_suf+'\n\n')
 
-    def format_errors(errors: List[Tuple[str, str]]) -> str:
-        "\n\n".join([f"In {filename}:\n{err_msg}" for filename, err_msg in errors])
+    def format_errors(self, errors: List[Tuple[str, str]]) -> str:
+        bla = "\n\n".join([f"In {filename}:\n{err_msg}" for filename, err_msg in errors])
+        return bla
 
     def implement_feature(self, requirement: Requirement) -> None:
         if self.verbose: print(f"Implementing feature: {requirement.content}")
@@ -124,13 +126,13 @@ class BuilderBot:
             current_errors = self.find_errors(requirement, new_codebase)
             if len(current_errors) == 0: break
             else:
-                if self.verbose: print("Implementation not sucessful. Trying again.")
+                if self.verbose: print(f"Implementation not sucessful.\nErrors:\n{current_errors}\nTrying again.\n\n")
                 if i >= max_iter: raise Exception(f"Could not implement this requirements: {requirement}")
             i += 1
         return
 
     def try_implementing_feature(self, requirement: Requirement, try_no:int, errors: Optional[str]) -> CodeBase:
-        code = SimpleSummarizer().summarize(self.code_base)  # get context
+        code = SimpleSummarizer().summarize(self.code_base)  # represent code base as str
         common_kwargs = {
             "llm": self.llm,
             "run_manager": self.run_manager,
@@ -141,21 +143,21 @@ class BuilderBot:
             "feature": requirement,
             "format_instructions": code_change_parser.get_format_instructions()
         }
-        if len(errors)==0:
-            change_json = self.inferer.get_thoughtful_reponse(DevPhase.WRITE_CODE, **common_kwargs)
-        else:
+        if errors:
             change_json = self.inferer.get_simple_response(DevPhase.IMPROVE_CODE, errors=errors, **common_kwargs)
+        else:
+            change_json = self.inferer.get_thoughtful_reponse(DevPhase.WRITE_CODE, **common_kwargs)
         change = code_change_parser.parse(change_json)
         return self.code_base.with_change(change)
 
-    def find_errors(self, requirement: Requirement, code: CodeBase) -> List[str, str]:
+    def find_errors(self, requirement: Requirement, code: CodeBase) -> List[Tuple[str, str]]:
         '''Check if the requirement is correctly implmented in the codebase'''
 
         errors: List[Tuple[str, str]] = []
 
         # check syntax (ie compilation)
         for file in code.files:
-            validator = SyntaxValidator.from_file_type(file.name)
+            validator = syntax_validator_from_file_type(file.name)
 
             code_in_file = str(file)
             sucess, err_msg = validator.check_syntax(code_in_file)

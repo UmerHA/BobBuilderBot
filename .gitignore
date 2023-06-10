@@ -2,6 +2,7 @@ runs.txt
 cache/
 output/
 doodle/
+*.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
