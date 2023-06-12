@@ -5,9 +5,9 @@ Bob the BuilderBot explores how we can use LLMs to create good software. It is s
 The goal is to create an agent that takes input from an average non-technical user and creates working software for the user.
 
 Reasonable asks from Bob the BuilderBot could be:
-- "Give me a Tetris game I can play in the browser"
-- "I want a website where I can track my weight"
-- "For our neighborhood, we're building an item library, where you can borrow items instead of books. Can you give me a website where people can borrow items?"
+- Give me a Tetris game I can play in the browser
+- I want a website where I can track my weight
+- For our neighborhood, we're building an item library, where you can borrow items instead of books. Can you give me a website where people can borrow items?
 
 The goal is **not** to build highly complex, performant or security-critical systems.
 Bob will never build software to control nuclear power plants or hospitals.
@@ -17,7 +17,7 @@ todo
 
 ## Approach
 
-Bob uses an agile development process works best. He aims to quickly develop an MVP, show it to the user and then improve.
+Bob uses an agile development process. He aims to quickly develop an MVP, show it to the user and then improve.
 
 Additionally, Bob tries to make educated assumptions instead of asking the user for every detail. Only when really necessary, does Bob ask clarifying questions.
 
