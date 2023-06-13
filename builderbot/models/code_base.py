@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import os
 from copy import deepcopy
-from typing import List
+from typing import List, Optional
 from langchain.output_parsers import PydanticOutputParser
-from pydantic import BaseModel, Field, Optional
+from pydantic import BaseModel, Field
 from .code_change import CodeChange, Insertion, Deletion, Replacement
 
 
@@ -17,7 +17,7 @@ class CodeFile(BaseModel):
 
 class CodeBase(BaseModel):
     files: List[CodeFile] = Field(description="a code file")
-    directory: Optional[str] = None  # directory inside project (e.g. "project" or "test")
+    directory: Optional[str] = Field(description="directory in project folder (e.g. `test`)")
 
     def with_change(self, codebase_change: CodeChange) -> CodeBase:
         new_code_base = deepcopy(self)
@@ -46,7 +46,11 @@ class CodeBase(BaseModel):
             if file.name == filename: return file
         raise ValueError(f"File with name {filename} not found in code base")
 
+    def set_directory(self, directory: str) -> None:
+        self.directory = directory
+
     def save(self, output_dir: str) -> None:
+        print(f"Saving code base at dir {self.directory}")
         if self.directory: output_dir += self.directory + "/"
         for code_file in self.files:
             full_path = os.path.join(output_dir, code_file.name)

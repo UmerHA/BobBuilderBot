@@ -30,4 +30,4 @@ class RunManager():
 
     @property
     def output_dir(self):
-        return f"output/run_{self.run_manager.run_no}/"
+        return f"output/run_{self.run_no}/"

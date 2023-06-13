@@ -53,6 +53,9 @@ class BuilderBot:
             project_description=project_description
         )
 
+        # Step 2.5: Setup project
+
+
         # Step 3: Structure Code
         code_base = self.inferer.get_thoughtful_reponse(
             DevPhase.STRUCTURE_CODE,
@@ -62,7 +65,7 @@ class BuilderBot:
             format_instructions=code_base_parser.get_format_instructions()
         )
         self.code_base = code_base_parser.parse(code_base)
-        self.code_base.directory = "project"
+        self.code_base.set_directory("project")
         self.code_base.save(output_dir=self.run_manager.output_dir)
 
         # Step 3: Structure Tests
@@ -74,7 +77,7 @@ class BuilderBot:
             format_instructions=code_base_parser.get_format_instructions()
         )
         self.test_base = code_base_parser.parse(test_base)
-        self.test_base.directory = "test"
+        self.test_base.set_directory("test")
         self.test_base.save(output_dir=self.run_manager.output_dir)
 
         # Step 4: Write code
@@ -91,17 +94,8 @@ class BuilderBot:
         # Step 7: Improve
         pass # out of scope
 
-
-    # # # # # # # # # # # # # # # # # #
-    # Helper functions for each phase #
-    # # # # # # # # # # # # # # # # # #
-
-    def format_errors(self, errors: List[Tuple[str, str]]) -> str:
-        bla = "\n\n".join([f"In {filename}:\n{err_msg}" for filename, err_msg in errors])
-        return bla
-
     def implement_feature(self, requirement: Requirement) -> CodeBase:
-        if self.verbose: print(f"Implementing feature: {requirement.content}")
+        print(f"Implementing feature: {requirement.content}")
         max_iter, i = self.MAX_ITER_PER_FEATURE, 1
         current_errors = []
         while True:
@@ -156,3 +150,7 @@ class BuilderBot:
         # todo
 
         return errors
+
+    def format_errors(self, errors: List[Tuple[str, str]]) -> str:
+        bla = "\n\n".join([f"In {filename}:\n{err_msg}" for filename, err_msg in errors])
+        return bla

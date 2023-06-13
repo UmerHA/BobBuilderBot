@@ -5,7 +5,8 @@ from typing import Tuple, Optional
 FILE_TYPES_TO_IGNORE = [
     'env',
     'replit',
-    'json'
+    'json',
+    'jsx'
 ]
 
 class SyntaxValidator:
