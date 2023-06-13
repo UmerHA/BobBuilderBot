@@ -1,0 +1,22 @@
+Your task is: {task}
+
+Here are the detailled requirements:
+{reqs}
+
+Here's the current code base:
+{code_base}
+
+Finish the code and make sure that each requirement is implemented.
+
+If you think the code base is done, then output "Done", and nothing else.
+Otherwise, output the finished code, but only ouput new or changed files.
+
+Your answer should be formatted like this (output nothing else! DO NOT decribe what language you're using, or esacape the code (e.g. ```javascript ...```).):
+File: foo.html
+<file content here>
+--
+File: bar.js
+<file content here>
+--
+File: another_file.css
+<file content here>

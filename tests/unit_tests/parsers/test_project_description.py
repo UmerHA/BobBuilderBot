@@ -1,4 +1,4 @@
-from builderbot.models.project_description import ProjectDescription, Requirement, Assumption, UserQuestion
+from builderbot.stringify import ProjectDescription, Requirement, Assumption, UserQuestion
 
 def test_to_str() -> None:
     descr  = ProjectDescription(

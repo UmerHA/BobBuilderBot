@@ -1,0 +1,19 @@
+Your task is: {task}
+
+Here is the detailled requirements:
+{reqs}
+
+Write the code and make sure each requirement is implemented.
+
+If the task is too complex to implement in a single output, give a high-level implementation instead.
+Make sure each files is syntactically correct, so it could be run.
+
+Your answer should be formatted like this (output nothing else! DO NOT decribe what language you're using, or esacape the code (e.g. ```javascript ...```).):
+File: foo.html
+<file content here>
+--
+File: bar.js
+<file content here>
+--
+File: another_file.css
+<file content here>

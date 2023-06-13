@@ -1,0 +1,28 @@
+Your task is: {task}
+
+First, translate the task into a list of requirements.
+Each requirement should be unit-testable.
+Make sure to include every requirement needed to complete the task (in an MVP way).
+
+If you absolutely need to ask clarifying questions to your client, then do so. Otherwise make educated and explicit assumptions.
+
+Your answer should be formatted like this (output nothing else!):
+Requirements:
+- requirement 1
+- requirement 2
+- ...
+
+Assumptions:
+- assumption 1
+- assumption 2
+- ...
+
+(if you have questions:)
+Questions:
+- question 1
+- question 2
+- ...
+
+(if you have no questions:)
+Questions:
+no questions

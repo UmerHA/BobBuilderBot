@@ -1,19 +1,19 @@
 import os
-from typing import List, Optional, Tuple
+import re
+from typing import Dict, List, Optional, Tuple
+
 from dotenv import load_dotenv
 from langchain.chat_models import ChatOpenAI
-from .code_base_summarizer import SimpleSummarizer
+
 from .inference import LLMInferer
-from .models import CodeBase, code_base_parser, code_change_parser, project_description_parser
-from .models.project_description import Requirement
+from .parser import str_to_codebase, str_to_project_description
 from .run_manager import RunManager
 from .stages import DevPhase
-from .validation.syntax import syntax_validator_from_file_type, FILE_TYPES_TO_IGNORE
 
+Requirements = List[str]
+CodeBase = Dict[str, str]
 
 class BuilderBot:
-
-    MAX_ITER_PER_FEATURE = 10
 
     def __init__(self, model_name: str ="gpt-3.5-turbo", cache_filename: Optional[str] = None) -> None:
         load_dotenv()
@@ -23,8 +23,8 @@ class BuilderBot:
         self.cache_filename = cache_filename
         self.inferer = LLMInferer(self.llm, self.run_manager, self.cache_filename)
 
-    def build(self, goal: str, verbose=False) -> None:
-        self.goal = goal
+    def build(self, task: str, verbose=False) -> None:
+        self.task = task
         self.verbose = verbose
         self.run_manager.start_run()
 
@@ -35,122 +35,110 @@ class BuilderBot:
         }
 
         # Step 1: Understand
-        project_description = self.inferer.get_thoughtful_reponse(
+        project_description = self.inferer.get_simple_response(
             DevPhase.UNDERSTAND,
             **common_kwargs,
-            user_goal=self.goal,
-            format_instructions=project_description_parser.get_format_instructions()
+            task=self.task
         )
-        parsed_project_description = project_description_parser.parse(project_description)
-        self.requirements = parsed_project_description.requirements
-        self.assumptions = parsed_project_description.assumptions
-        project_description = parsed_project_description.to_str()
-
-        # Step 2: Architect
-        architecture = self.inferer.get_thoughtful_reponse(
-            DevPhase.ARCHITECTURE,
-            **common_kwargs,
-            project_description=project_description
-        )
+        self.save_project_description(project_description)
+        self.reqs, self.assumptions, self.questions = str_to_project_description(project_description)
+        self.reqs_str = reqs_to_str(self.reqs)
 
         # Step 2.5: Setup project
 
 
         # Step 3: Structure Code
-        code_base = self.inferer.get_thoughtful_reponse(
+        codebase = self.inferer.get_simple_response(
             DevPhase.STRUCTURE_CODE,
             **common_kwargs,
-            project_description=project_description,
-            architecture=architecture,
-            format_instructions=code_base_parser.get_format_instructions()
+            task=self.task,
+            reqs=self.reqs
         )
-        self.code_base = code_base_parser.parse(code_base)
-        self.code_base.set_directory("project")
-        self.code_base.save(output_dir=self.run_manager.output_dir)
+        self.codebase = str_to_codebase(codebase)
+        self.save_codebase()
 
         # Step 3: Structure Tests
-        test_base = self.inferer.get_thoughtful_reponse(
+        code_base_test = self.inferer.get_simple_response(
             DevPhase.STRUCTURE_TESTS,
             **common_kwargs,
-            project_description=project_description,
-            architecture=architecture,
-            format_instructions=code_base_parser.get_format_instructions()
+            task=self.task,
+            reqs=self.reqs
         )
-        self.test_base = code_base_parser.parse(test_base)
-        self.test_base.set_directory("test")
-        self.test_base.save(output_dir=self.run_manager.output_dir)
+        self.code_base_test = str_to_codebase(code_base_test)
+        self.save_codebase()
 
         # Step 4: Write code
-        for req in self.requirements:
-            self.code_base = self.implement_feature(req)
-            self.code_base.save(output_dir=self.run_manager.output_dir)
+        for i in range(10):
+            print(f"Starting iteration {i+1} " + "🫡"*(i+1))
+            codebase_str = codebase_to_str(self.codebase)
 
+            new_codebase_str = self.inferer.get_simple_response(
+                DevPhase.WRITE_CODE,
+                **common_kwargs,
+                task=self.task,
+                reqs=self.reqs_str,
+                code_base=codebase_str
+            )
+
+            if new_codebase_str == "Done":
+                print("We're done!")
+                break
+
+            new_codebase = str_to_codebase(new_codebase_str)
+            self.codebase = merge_codebases(self.codebase, new_codebase)
+            self.save_codebase()
+  
         # Step 5: Write tests
         pass
 
-        # Step 6: Deploy
-        pass # out of scope -  will be done manu
+    def save_project_description(self, project_description: str) -> None:
+        directory = self.run_manager.output_dir
+        os.makedirs(directory, exist_ok=True)    
+        file_name = "project_description.txt"
+        file_path = os.path.join(directory, file_name)        
+        with open(file_path, 'w') as file:
+            file.write(project_description)
 
-        # Step 7: Improve
-        pass # out of scope
+    def save_codebase(self) -> None:
+        directory = self.run_manager.output_dir
+        os.makedirs(directory, exist_ok=True)    
+        for file_name, file_content in self.codebase.items():
+            file_path = os.path.join(directory, file_name)        
+            with open(file_path, 'w') as file:
+                file.write(file_content.strip())
 
-    def implement_feature(self, requirement: Requirement) -> CodeBase:
-        print(f"Implementing feature: {requirement.content}")
-        max_iter, i = self.MAX_ITER_PER_FEATURE, 1
-        current_errors = []
-        while True:
-            errors_as_str = self.format_errors(current_errors) if len(current_errors)>0 else None
-            new_codebase = self.try_implementing_feature(requirement, try_no=i, errors=errors_as_str)
-            current_errors = self.find_errors(requirement, new_codebase)
-            if len(current_errors) == 0: break
-            else:
-                if self.verbose: print(f"Implementation not sucessful.\nErrors:\n{current_errors}\nTrying again.\n\n")
-                if i >= max_iter: raise Exception(f"Could not implement this requirements: {requirement}")
-            i += 1
-        return new_codebase
+def merge_codebases(old_codebase: CodeBase, new_codebase: CodeBase) -> CodeBase:
+    merged_codebase = {**old_codebase, **new_codebase}
+    return merged_codebase
 
-    def try_implementing_feature(self, requirement: Requirement, try_no:int, errors: Optional[str]) -> CodeBase:
-        code = SimpleSummarizer().summarize(self.code_base)  # represent code base as str
-        common_kwargs = {
-            "llm": self.llm,
-            "run_manager": self.run_manager,
-            "verbose": True, # todo: change back
-            "try_no": try_no,
-            "user_goal": self.goal,
-            "code_base": code,
-            "feature": requirement,
-            "format_instructions": code_change_parser.get_format_instructions()
-        }
-        if not errors: errors = "code not checked yet, so no errors yet"
-        change_json = self.inferer.get_simple_response(DevPhase.IMPROVE_CODE, errors=errors, **common_kwargs)
-        change = code_change_parser.parse(change_json)
-        return self.code_base.with_change(change)
+def codebase_to_str(codebase: Dict[str, str]) -> str:
+    result = ""
+    for file_name, file_content in codebase.items():
+        result += "File: " + file_name + "\n" # file name
+        result += file_content + "\n"  # content
+        result += "--\n"
+    return result
 
-    def find_errors(self, requirement: Requirement, code: CodeBase) -> List[Tuple[str, str]]:
-        '''Check if the requirement is correctly implmented in the codebase'''
+def reqs_to_str(reqs: List[str]) -> str:
+    return "\n".join(["- " + req for req in reqs])
 
-        errors: List[Tuple[str, str]] = []
+def str_to_project_description(text: str) -> Tuple[List[str], List[str], Optional[List[str]]]:
+    sections = re.split(r'\n\n', text)
+    requirements = re.findall(r'- (.*)', sections[0])
+    assumptions = re.findall(r'- (.*)', sections[1])
+    
+    if 'no questions' in sections[2]:
+        questions = None
+    else:
+        questions = re.findall(r'- (.*)', sections[2])
+    
+    return requirements, assumptions, questions
 
-        # check syntax (ie compilation)
-        for file in code.files:
-            if file.name.split(".")[-1] in FILE_TYPES_TO_IGNORE: continue
-            
-            validator = syntax_validator_from_file_type(file.name)
-
-            code_in_file = str(file)
-            sucess, err_msg = validator.check_syntax(code_in_file)
-
-            if sucess:
-                formatted_code = validator.format(code_in_file)
-                file.overwrite(formatted_code)
-            else:
-                errors.append((file.name, err_msg))
-
-        # check semancitc (ie if tests pass)
-        # todo
-
-        return errors
-
-    def format_errors(self, errors: List[Tuple[str, str]]) -> str:
-        bla = "\n\n".join([f"In {filename}:\n{err_msg}" for filename, err_msg in errors])
-        return bla
+def str_to_codebase(string: str) -> Dict[str, str]:
+    files_str = string.split("--\n")
+    codebase = {}
+    for file_str in files_str:
+        if file_str:  # Skip empty strings that might result from split
+            split_file_str = file_str.split("\n", 1)
+            codebase[split_file_str[0][6:]] = split_file_str[1]
+    return codebase
